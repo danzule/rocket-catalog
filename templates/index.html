@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор ракетоносителя</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: url('/static/starry_sky.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff; /* Белый текст для читаемости на темном фоне */
+        }
+
+        h1, h2 {
+            color: #e0e0e0; /* Светло-серый цвет заголовков */
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
+            max-width: 500px;
+            backdrop-filter: blur(5px); /* Эффект размытия фона */
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #d0d0d0;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        input::placeholder, select {
+            color: #aaa;
+        }
+
+        button {
+            background-color: #ff5e62;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #e04e52;
+        }
+
+        .result {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            margin: 20px auto;
+            max-width: 600px;
+            backdrop-filter: blur(5px);
+        }
+
+        .result img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        /* Стили для карточек ракетоносителей */
+        .rocket-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .rocket-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            width: 300px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .rocket-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .rocket-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .rocket-card h3 {
+            color: #e0e0e0;
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        .rocket-card p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #d0d0d0;
+        }
+
+        /* Стили для таблицы космодромов */
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: 40px auto;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            color: #d0d0d0;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Выбор ракетоносителя</h1>
+    <form method="POST"><label for="payload_mass">Масса полезной нагрузки (кг):</label>
+        <input type="number" id="payload_mass" name="payload_mass" step="any" required>
+
+        <label for="orbit_type">Тип орбиты:</label>
+        <select id="orbit_type" name="orbit_type" required>
+            <option value="LEO">LEO (низкая околоземная орбита)</option>
+            <option value="MEO">MEO (средняя околоземная орбита)</option>
+            <option value="GEO">GEO (геостационарная орбита)</option>
+            <option value="custom">Кастомная орбита</option>
+        </select>
+
+        <label for="apogee">Апогей (км, для кастомной орбиты):</label>
+        <input type="number" id="apogee" name="apogee" step="any">
+
+        <label for="perigee">Перигей (км, для кастомной орбиты):</label>
+        <input type="number" id="perigee" name="perigee" step="any">
+
+        <label for="inclination">Наклонение орбиты (градусы):</label>
+        <input type="number" id="inclination" name="inclination" step="any">
+
+        <button type="submit">Найти</button>
+    </form>
+
+    {% if result %}
+    <div class="result">
+        <h2>Результат:</h2>
+        <p><strong>Ракетоносец:</strong> {{ result.name }}</p>
+        <p><strong>Космодром:</strong> {{ result.launch_site }} ({{ result.launch_site_location }})</p>
+        <p><strong>Стоимость запуска с космодрома:</strong> ${{ result.launch_site_cost | int }}</p>
+        <p><strong>Общая стоимость:</strong> ${{ result.cost | int }}</p>
+        <p><strong>Тип защиты:</strong> {{ result.protection }}</p>
+        <p><strong>Масса защиты:</strong> {{ "%.2f" | format(result.protection_mass) }} кг ({{ "%.2f" | format(result.protection_percentage) }}% от массы груза)</p>
+        <p><strong>Стоимость защиты:</strong> ${{ result.protection_cost | int }}</p>
+        <p><strong>Масса топлива:</strong> {{ "%.2f" | format(result.fuel_mass) }} кг</p>
+        <p><strong>Масса окислителя:</strong> {{ "%.2f" | format(result.oxidizer_mass) }} кг</p>
+        <p><strong>Тип топлива:</strong> {{ result.fuel_type }}</p>
+        {% if result.name != "Нет подходящего носителя" and result.name != "Ошибка: Укажите корректные апогей и перигей (оба должны быть больше 0)" and result.name != "Ошибка: Масса полезной нагрузки должна быть больше 0" and not result.name.startswith("Ошибка") %}
+        <img src="{{ url_for('static', filename=result.name.lower().replace(' ', '_') + '.jpg') }}" alt="{{ result.name }}">
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <h2>Доступные ракетоносители</h2>
+    <div class="rocket-cards">
+        {% for name, data in rockets.items() %}
+        <div class="rocket-card">
+            <img src="{{ url_for('static', filename=name.lower().replace(' ', '_') + '.jpg') }}" alt="{{ name }}">
+            <h3>{{ name }}</h3>
+            <p><strong>Макс. нагрузка (LEO):</strong> {{ data.max_payload_leo }} кг</p>
+            <p><strong>Макс. нагрузка (GEO):</strong> {{ data.max_payload_geo }} кг</p>
+            <p><strong>Стоимость ($/кг):</strong> {{ data.cost_per_kg }}</p>
+            <p><strong>Космодром:</strong> {{ data.launch_site }}</p>
+            <p>
+                {% if name == "Soyuz-2" %}
+                Надежный российский ракетоносец, используемый для запусков на низкие орбиты. Исторически значим для космической программы.
+                {% elif name == "Falcon 9" %}
+                Инновационная ракета от SpaceX с возможностью повторного использования. Идеальна для коммерческих запусков.
+                {% elif name == "Ariane 5" %}
+                Европейский ракетоносец, оптимизированный для геостационарных орбит. Высокая надежность.
+                {% elif name == "Atlas V" %}
+                Американская ракета, используемая для военных и научных миссий. Высокая точность доставки.
+                {% elif name == "Delta IV Heavy" %}
+                Мощный ракетоносец для тяжелых грузов. Используется для запусков на высокие орбиты.
+                {% elif name == "Long March 5" %}
+                Китайская ракета, предназначенная для крупных миссий, включая лунные программы.{% elif name == "Proton-M" %}
+                Российский ракетоносец для тяжелых грузов, часто используется для коммерческих программ.
+                {% elif name == "SLS Block 1" %}
+                Сверхтяжелая ракета NASA для глубокого космоса, включая миссии на Луну и Марс.
+                {% endif %}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2>Доступные космодромы</h2>
+    <table>
+        <tr>
+            <th>Название</th>
+            <th>Местоположение</th>
+            <th>Стоимость запуска ($)</th>
+        </tr>
+        {% for name, data in launch_sites.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ data.location }}</td>
+            <td>{{ data.launch_cost | int }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
